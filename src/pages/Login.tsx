@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 
@@ -81,6 +81,12 @@ export default function Login() {
         >
           {loading ? 'Logging in...' : 'Log in'}
         </button>
+        <p className="text-sm text-gray-400 text-center">
+          Don't have an account?{' '}
+          <Link to="/signup" className="text-blue-400 hover:underline">
+            Sign up
+          </Link>
+        </p>
       </form>
     </div>
   )
