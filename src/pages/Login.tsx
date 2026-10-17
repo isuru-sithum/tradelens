@@ -1,13 +1,17 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../context/AuthContext'
 
 export default function Login() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+      async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
@@ -22,9 +26,10 @@ export default function Login() {
     if (error) {
       setError(error.message)
     }
-    // On success, AuthContext's onAuthStateChange listener will
-    // automatically update the session — no manual redirect needed yet,
-    // we'll wire that up when we add routing.
+  }
+    if (user) {
+    navigate('/dashboard', { replace: true })
+    return null
   }
 
   return (

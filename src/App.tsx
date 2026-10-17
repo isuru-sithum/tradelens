@@ -1,22 +1,22 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
-import { useAuth } from './context/AuthContext'
+import Dashboard from './pages/Dashboard'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
-  const { user, loading } = useAuth()
-
-  if (loading) {
-    return <p className="text-white p-8">Loading...</p>
-  }
-
-  if (!user) {
-    return <Login />
-  }
-
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-2xl font-bold">You're logged in</h1>
-      <p className="mt-2 text-gray-300">Email: {user.email}</p>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   )
 }
 
