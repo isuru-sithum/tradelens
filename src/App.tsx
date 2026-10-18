@@ -5,6 +5,7 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import AddTrade from './pages/AddTrade'
 
 function App() {
   return (
@@ -22,6 +23,14 @@ function App() {
         }
       />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route
+        path="/add-trade"
+        element={
+          <ProtectedRoute>
+            <AddTrade />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   )
 }

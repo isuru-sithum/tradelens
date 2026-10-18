@@ -1,8 +1,11 @@
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
+import { useTrades } from '../hooks/useTrades'
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const { trades, loading, error } = useTrades()
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -19,7 +22,55 @@ export default function Dashboard() {
           Log out
         </button>
       </div>
-      <p className="text-gray-300">Logged in as: {user?.email}</p>
+
+      <p className="text-gray-300 mb-4">Logged in as: {user?.email}</p>
+
+      <Link
+        to="/add-trade"
+        className="inline-block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-medium mb-6"
+      >
+        + Add Trade
+      </Link>
+
+      <h2 className="text-xl font-semibold mb-3">Your Trades</h2>
+
+      {loading && <p className="text-gray-400">Loading trades...</p>}
+      {error && <p className="text-red-400">{error}</p>}
+
+      {!loading && !error && trades.length === 0 && (
+        <p className="text-gray-400">No trades yet. Add your first trade.</p>
+      )}
+
+      {!loading && trades.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr className="border-b border-gray-700 text-gray-400">
+                <th className="py-2 pr-4">Date</th>
+                <th className="py-2 pr-4">Pair</th>
+                <th className="py-2 pr-4">Direction</th>
+                <th className="py-2 pr-4">Entry</th>
+                <th className="py-2 pr-4">Exit</th>
+                <th className="py-2 pr-4">Size</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trades.map((trade) => (
+                <tr key={trade.id} className="border-b border-gray-800">
+                  <td className="py-2 pr-4">
+                    {new Date(trade.trade_date).toLocaleDateString()}
+                  </td>
+                  <td className="py-2 pr-4">{trade.pair}</td>
+                  <td className="py-2 pr-4 capitalize">{trade.direction}</td>
+                  <td className="py-2 pr-4">{trade.entry_price}</td>
+                  <td className="py-2 pr-4">{trade.exit_price ?? '—'}</td>
+                  <td className="py-2 pr-4">{trade.position_size}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
