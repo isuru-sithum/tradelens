@@ -3,10 +3,12 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { useTrades } from '../hooks/useTrades'
 import { useState } from 'react'
+import { calculateStats } from '../utils/stats'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { trades, loading, error, refetch } = useTrades()
+  const stats = calculateStats(trades)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleLogout() {
@@ -54,6 +56,65 @@ export default function Dashboard() {
       >
         Settings
       </Link>
+      
+
+      {!loading && trades.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Total Net PnL</p>
+            <p className={`text-xl font-bold ${stats.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {stats.totalPnL.toFixed(2)}
+            </p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Win Rate</p>
+            <p className="text-xl font-bold">{stats.winRate.toFixed(1)}%</p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Total Trades</p>
+            <p className="text-xl font-bold">{stats.totalTrades}</p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">W / L / BE</p>
+            <p className="text-xl font-bold">
+              {stats.wins} / {stats.losses} / {stats.breakEven}
+            </p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Avg Win</p>
+            <p className="text-xl font-bold text-green-400">{stats.avgWin.toFixed(2)}</p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Avg Loss</p>
+            <p className="text-xl font-bold text-red-400">{stats.avgLoss.toFixed(2)}</p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Profit Factor</p>
+            <p className="text-xl font-bold">
+              {stats.profitFactor !== null ? stats.profitFactor.toFixed(2) : '—'}
+            </p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Best / Worst Trade</p>
+            <p className="text-xl font-bold">
+              <span className="text-green-400">
+                {stats.bestTrade ? stats.bestTrade.pnl?.toFixed(0) : '—'}
+              </span>
+              {' / '}
+              <span className="text-red-400">
+                {stats.worstTrade ? stats.worstTrade.pnl?.toFixed(0) : '—'}
+              </span>
+            </p>
+          </div>
+        </div>
+      )}
 
       <h2 className="text-xl font-semibold mb-3">Your Trades</h2>
 
