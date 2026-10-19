@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import { useTrades } from '../hooks/useTrades'
 import { useEffect, useState } from 'react'
 import { calculateStats } from '../utils/stats'
+import FollowedPlanChart from '../components/FollowedPlanChart'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -147,6 +148,17 @@ export default function Dashboard() {
                 : '—'}
             </p>
           </div>
+        </div>
+      )}
+
+      {!loading && trades.length > 0 && (
+        <div className="mb-8">
+          <FollowedPlanChart
+            followedWinRate={stats.followedWinRate}
+            brokeWinRate={stats.brokeWinRate}
+            followedAvgPnL={stats.followedAvgPnL}
+            brokeAvgPnL={stats.brokeAvgPnL}
+          />
         </div>
       )}
 
