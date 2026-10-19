@@ -99,3 +99,62 @@ export function calculateStats(trades: Trade[]) {
     disciplineScore,
   }
 }
+
+export function getCumulativePnL(trades: Trade[]) {
+  const closed = trades
+    .filter((t) => t.pnl !== null)
+    .slice()
+    .sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime())
+
+  let running = 0
+  return closed.map((t) => {
+    running += t.pnl ?? 0
+    return {
+      date: new Date(t.trade_date).toLocaleDateString(),
+      cumulativePnL: Number(running.toFixed(2)),
+    }
+  })
+}
+
+export function getMonthlyPnL(trades: Trade[]) {
+  const closed = trades.filter((t) => t.pnl !== null)
+  const byMonth: Record<string, number> = {}
+
+  for (const t of closed) {
+    const d = new Date(t.trade_date)
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    byMonth[key] = (byMonth[key] ?? 0) + (t.pnl ?? 0)
+  }
+
+  return Object.entries(byMonth)
+    .sort(([a], [b]) => (a > b ? 1 : -1))
+    .map(([month, pnl]) => ({ month, pnl: Number(pnl.toFixed(2)) }))
+}
+
+export function getWinLossDistribution(trades: Trade[]) {
+  const closed = trades.filter((t) => t.pnl !== null)
+  const wins = closed.filter((t) => (t.pnl ?? 0) > 0).length
+  const losses = closed.filter((t) => (t.pnl ?? 0) < 0).length
+  const breakEven = closed.filter((t) => (t.pnl ?? 0) === 0).length
+
+  return [
+    { name: 'Wins', value: wins },
+    { name: 'Losses', value: losses },
+    { name: 'Break Even', value: breakEven },
+  ].filter((d) => d.value > 0)
+}
+
+export function getPerformanceBySetup(trades: Trade[]) {
+  const closed = trades.filter((t) => t.pnl !== null && t.setup)
+  const bySetup: Record<string, number> = {}
+
+  for (const t of closed) {
+    const key = t.setup ?? 'Unlabeled'
+    bySetup[key] = (bySetup[key] ?? 0) + (t.pnl ?? 0)
+  }
+
+  return Object.entries(bySetup).map(([setup, pnl]) => ({
+    setup,
+    pnl: Number(pnl.toFixed(2)),
+  }))
+}

@@ -15,6 +15,7 @@ export default function EditTrade() {
   const [takeProfit, setTakeProfit] = useState('')
   const [positionSize, setPositionSize] = useState('')
   const [fees, setFees] = useState('0')
+  const [setup, setSetup] = useState('')
   const [notes, setNotes] = useState('')
 
     const [checklist, setChecklist] = useState({
@@ -73,6 +74,7 @@ export default function EditTrade() {
         setTakeProfit(data.take_profit !== null ? String(data.take_profit) : '')
         setPositionSize(String(data.position_size))
         setFees(String(data.fees))
+        setSetup(data.setup ?? '')
         setNotes(data.notes ?? '')
         setFollowedPlan(data.followed_plan)
         setMistakes(data.mistakes ?? [])
@@ -104,6 +106,7 @@ export default function EditTrade() {
       .update({
         pair,
         direction,
+        setup: setup || null,
         entry_price: entry,
         exit_price: exit,
         stop_loss: sl,

@@ -5,6 +5,7 @@ import { useTrades } from '../hooks/useTrades'
 import { useEffect, useState } from 'react'
 import { calculateStats } from '../utils/stats'
 import FollowedPlanChart from '../components/FollowedPlanChart'
+import TradeCharts from '../components/TradeCharts'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -159,6 +160,7 @@ export default function Dashboard() {
             followedAvgPnL={stats.followedAvgPnL}
             brokeAvgPnL={stats.brokeAvgPnL}
           />
+          {!loading && trades.length > 0 && <TradeCharts trades={trades} />}
         </div>
       )}
 
