@@ -88,23 +88,25 @@ export default function AddTrade() {
       takeProfit: tp,
     })
 
-        const { error } = await supabase.from('trades').insert({
-      user_id: user?.id,
-      pair,
-      direction,
-      entry_price: entry,
-      exit_price: exit,
-      stop_loss: sl,
-      take_profit: tp,
-      position_size: size,
-      fees: feeAmount,
-      pnl,
-      risk_amount: riskAmount,
-      rr_planned: rrPlanned,
-      followed_plan: followedPlan,
-      mistakes: mistakes.length > 0 ? mistakes : null,
-      notes: notes || null,
-    })
+    const { error } = await supabase
+      .from('trades')
+      .update({
+        pair,
+        direction,
+        entry_price: entry,
+        exit_price: exit,
+        stop_loss: sl,
+        take_profit: tp,
+        position_size: size,
+        fees: feeAmount,
+        pnl,
+        risk_amount: riskAmount,
+        rr_planned: rrPlanned,
+        followed_plan: followedPlan,
+        mistakes: mistakes.length > 0 ? mistakes : null,
+        notes: notes || null,
+      })
+      .eq('id', id)
 
     setLoading(false)
 
