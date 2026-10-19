@@ -6,6 +6,7 @@ import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import AddTrade from './pages/AddTrade'
+import EditTrade from './pages/EditTrade'
 
 function App() {
   return (
@@ -28,6 +29,14 @@ function App() {
         element={
           <ProtectedRoute>
             <AddTrade />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit-trade/:id"
+        element={
+          <ProtectedRoute>
+            <EditTrade />
           </ProtectedRoute>
         }
       />

@@ -2,13 +2,30 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { useTrades } from '../hooks/useTrades'
+import { useState } from 'react'
 
 export default function Dashboard() {
   const { user } = useAuth()
-  const { trades, loading, error } = useTrades()
+  const { trades, loading, error, refetch } = useTrades()
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleLogout() {
     await supabase.auth.signOut()
+  }
+
+    async function handleDelete(id: string) {
+    const confirmed = window.confirm('Delete this trade? This cannot be undone.')
+    if (!confirmed) return
+
+    setDeletingId(id)
+    const { error } = await supabase.from('trades').delete().eq('id', id)
+    setDeletingId(null)
+
+    if (error) {
+      alert('Failed to delete trade: ' + error.message)
+    } else {
+      refetch()
+    }
   }
 
   return (
@@ -53,6 +70,7 @@ export default function Dashboard() {
                 <th className="py-2 pr-4">Exit</th>
                 <th className="py-2 pr-4">Size</th>
                 <th className="py-2 pr-4">PnL</th>
+                <th className="py-2 pr-4">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -69,6 +87,21 @@ export default function Dashboard() {
                   <td className={`py-2 pr-4 ${trade.pnl !== null && trade.pnl >= 0 ? 'text-green-400' : trade.pnl !== null ? 'text-red-400' : 'text-gray-500'}`}>
                     {trade.pnl !== null ? trade.pnl.toFixed(2) : '—'}
                   </td>
+                  <td className="py-2 pr-4 space-x-3">
+                    <Link
+                      to={`/edit-trade/${trade.id}`}
+                      className="text-blue-400 hover:text-blue-300 text-sm"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(trade.id)}
+                      disabled={deletingId === trade.id}
+                      className="text-red-400 hover:text-red-300 disabled:opacity-50 text-sm"
+                    >
+                      {deletingId === trade.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </td>     
                 </tr>
               ))}
             </tbody>
