@@ -70,6 +70,15 @@ export function calculateStats(trades: Trade[]) {
         brokeTrades.length
       : null
 
+// Discipline score: % of closed trades where the user followed their plan
+  const disciplineEligible = closedTrades.filter((t) => t.followed_plan !== null)
+  const disciplineScore =
+    disciplineEligible.length > 0
+      ? (disciplineEligible.filter((t) => t.followed_plan === true).length /
+          disciplineEligible.length) *
+        100
+      : null
+
   return {
     totalPnL,
     totalTrades: trades.length,
@@ -87,5 +96,6 @@ export function calculateStats(trades: Trade[]) {
     brokeWinRate,
     followedAvgPnL,
     brokeAvgPnL,
+    disciplineScore,
   }
 }

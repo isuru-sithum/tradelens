@@ -2,12 +2,29 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { useTrades } from '../hooks/useTrades'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { calculateStats } from '../utils/stats'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const { trades, loading, error, refetch } = useTrades()
+
+    const [startingBalance, setStartingBalance] = useState<number | null>(null)
+
+  useEffect(() => {
+    async function loadBalance() {
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('starting_balance')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (data) setStartingBalance(data.starting_balance)
+    }
+    loadBalance()
+  }, [user])
+
   const stats = calculateStats(trades)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
@@ -56,7 +73,7 @@ export default function Dashboard() {
       >
         Settings
       </Link>
-      
+
 
       {!loading && trades.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -111,6 +128,23 @@ export default function Dashboard() {
               <span className="text-red-400">
                 {stats.worstTrade ? stats.worstTrade.pnl?.toFixed(0) : '—'}
               </span>
+            </p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Account Balance</p>
+            <p className="text-xl font-bold">
+              {startingBalance !== null
+                ? (startingBalance + stats.totalPnL).toFixed(2)
+                : '—'}
+            </p>
+          </div>
+
+          <div className="bg-gray-800 rounded-lg p-4">
+            <p className="text-gray-400 text-xs mb-1">Discipline Score</p>
+            <p className="text-xl font-bold">
+              {stats.disciplineScore !== null
+                ? `${stats.disciplineScore.toFixed(0)}%`
+                : '—'}
             </p>
           </div>
         </div>
