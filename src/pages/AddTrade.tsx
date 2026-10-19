@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
+import { calculatePnL, calculateRiskAmount, calculatePlannedRR } from '../utils/calculations'
 
 export default function AddTrade() {
   const { user } = useAuth()
@@ -25,16 +26,48 @@ export default function AddTrade() {
     setError(null)
     setLoading(true)
 
+        const entry = parseFloat(entryPrice)
+    const exit = exitPrice ? parseFloat(exitPrice) : null
+    const sl = stopLoss ? parseFloat(stopLoss) : null
+    const tp = takeProfit ? parseFloat(takeProfit) : null
+    const size = parseFloat(positionSize)
+    const feeAmount = parseFloat(fees)
+
+    const pnl = calculatePnL({
+      direction,
+      entryPrice: entry,
+      exitPrice: exit,
+      positionSize: size,
+      fees: feeAmount,
+    })
+
+    const riskAmount = calculateRiskAmount({
+      direction,
+      entryPrice: entry,
+      stopLoss: sl,
+      positionSize: size,
+    })
+
+    const rrPlanned = calculatePlannedRR({
+      direction,
+      entryPrice: entry,
+      stopLoss: sl,
+      takeProfit: tp,
+    })
+
     const { error } = await supabase.from('trades').insert({
       user_id: user?.id,
       pair,
       direction,
-      entry_price: parseFloat(entryPrice),
-      exit_price: exitPrice ? parseFloat(exitPrice) : null,
-      stop_loss: stopLoss ? parseFloat(stopLoss) : null,
-      take_profit: takeProfit ? parseFloat(takeProfit) : null,
-      position_size: parseFloat(positionSize),
-      fees: parseFloat(fees),
+      entry_price: entry,
+      exit_price: exit,
+      stop_loss: sl,
+      take_profit: tp,
+      position_size: size,
+      fees: feeAmount,
+      pnl,
+      risk_amount: riskAmount,
+      rr_planned: rrPlanned,
       notes: notes || null,
     })
 

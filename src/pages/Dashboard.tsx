@@ -52,6 +52,7 @@ export default function Dashboard() {
                 <th className="py-2 pr-4">Entry</th>
                 <th className="py-2 pr-4">Exit</th>
                 <th className="py-2 pr-4">Size</th>
+                <th className="py-2 pr-4">PnL</th>
               </tr>
             </thead>
             <tbody>
@@ -65,6 +66,9 @@ export default function Dashboard() {
                   <td className="py-2 pr-4">{trade.entry_price}</td>
                   <td className="py-2 pr-4">{trade.exit_price ?? '—'}</td>
                   <td className="py-2 pr-4">{trade.position_size}</td>
+                  <td className={`py-2 pr-4 ${trade.pnl !== null && trade.pnl >= 0 ? 'text-green-400' : trade.pnl !== null ? 'text-red-400' : 'text-gray-500'}`}>
+                    {trade.pnl !== null ? trade.pnl.toFixed(2) : '—'}
+                  </td>
                 </tr>
               ))}
             </tbody>
