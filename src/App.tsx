@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import AddTrade from './pages/AddTrade'
 import EditTrade from './pages/EditTrade'
+import Settings from './pages/Settings'
 
 function App() {
   return (
@@ -37,6 +38,14 @@ function App() {
         element={
           <ProtectedRoute>
             <EditTrade />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         }
       />

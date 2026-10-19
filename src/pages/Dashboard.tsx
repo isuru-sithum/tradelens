@@ -48,6 +48,12 @@ export default function Dashboard() {
       >
         + Add Trade
       </Link>
+            <Link
+        to="/settings"
+        className="inline-block bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-medium mb-6 ml-3"
+      >
+        Settings
+      </Link>
 
       <h2 className="text-xl font-semibold mb-3">Your Trades</h2>
 
