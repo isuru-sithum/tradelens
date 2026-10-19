@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { calculatePnL, calculateRiskAmount, calculatePlannedRR } from '../utils/calculations'
 
@@ -134,6 +134,9 @@ export default function EditTrade() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
+      <Link to="/dashboard" className="text-blue-400 hover:underline text-sm mb-4 inline-block">
+        ← Back to Dashboard
+      </Link>
       <h1 className="text-2xl font-bold mb-6">Edit Trade</h1>
 
       <form onSubmit={handleSubmit} className="max-w-lg space-y-4">

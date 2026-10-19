@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { calculatePnL, calculateRiskAmount, calculatePlannedRR } from '../utils/calculations'
@@ -51,15 +51,59 @@ export default function AddTrade() {
     )
   }
 
+  const [startingBalance, setStartingBalance] = useState<number | null>(null)
+  const [riskLimit, setRiskLimit] = useState<number | null>(null)
+  const [acknowledgeOverride, setAcknowledgeOverride] = useState(false)
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!user) return
+      const { data } = await supabase
+        .from('profiles')
+        .select('starting_balance, risk_per_trade_percent')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      if (data) {
+        setStartingBalance(data.starting_balance)
+        setRiskLimit(data.risk_per_trade_percent)
+      }
+    }
+    loadProfile()
+  }, [user])
+
+    const plannedRiskAmount = calculateRiskAmount({
+    direction,
+    entryPrice: parseFloat(entryPrice) || 0,
+    stopLoss: stopLoss ? parseFloat(stopLoss) : null,
+    positionSize: parseFloat(positionSize) || 0,
+  })
+
+  const plannedRiskPercent =
+    plannedRiskAmount !== null && startingBalance
+      ? (plannedRiskAmount / startingBalance) * 100
+      : null
+
+  const exceedsRiskLimit =
+    plannedRiskPercent !== null &&
+    riskLimit !== null &&
+    plannedRiskPercent > riskLimit
+
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
-    setLoading(true)
 
-        const entry = parseFloat(entryPrice)
+    if (exceedsRiskLimit && !acknowledgeOverride) {
+      setError('Please acknowledge the risk warning above before saving.')
+      return
+    }
+
+    setError(null)
+    setLoading(true)  
+
+    const entry = parseFloat(entryPrice)
     const exit = exitPrice ? parseFloat(exitPrice) : null
     const sl = stopLoss ? parseFloat(stopLoss) : null
     const tp = takeProfit ? parseFloat(takeProfit) : null
@@ -88,25 +132,23 @@ export default function AddTrade() {
       takeProfit: tp,
     })
 
-    const { error } = await supabase
-      .from('trades')
-      .update({
-        pair,
-        direction,
-        entry_price: entry,
-        exit_price: exit,
-        stop_loss: sl,
-        take_profit: tp,
-        position_size: size,
-        fees: feeAmount,
-        pnl,
-        risk_amount: riskAmount,
-        rr_planned: rrPlanned,
-        followed_plan: followedPlan,
-        mistakes: mistakes.length > 0 ? mistakes : null,
-        notes: notes || null,
-      })
-      .eq('id', id)
+    const { error } = await supabase.from('trades').insert({
+      user_id: user?.id,
+      pair,
+      direction,
+      entry_price: entry,
+      exit_price: exit,
+      stop_loss: sl,
+      take_profit: tp,
+      position_size: size,
+      fees: feeAmount,
+      pnl,
+      risk_amount: riskAmount,
+      rr_planned: rrPlanned,
+      followed_plan: followedPlan,
+      mistakes: mistakes.length > 0 ? mistakes : null,
+      notes: notes || null,
+    })
 
     setLoading(false)
 
@@ -119,6 +161,9 @@ export default function AddTrade() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
+      <Link to="/dashboard" className="text-blue-400 hover:underline text-sm mb-4 inline-block">
+        ← Back to Dashboard
+      </Link>
       <h1 className="text-2xl font-bold mb-6">Add Trade</h1>
 
       <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
@@ -226,7 +271,24 @@ export default function AddTrade() {
           />
         </div>
 
-                <div className="border-t border-gray-700 pt-4">
+                {exceedsRiskLimit && (
+          <div className="bg-red-900/40 border border-red-600 rounded p-4 space-y-2">
+            <p className="text-red-300 font-medium">
+              ⚠ This trade risks {plannedRiskPercent?.toFixed(2)}% of your balance,
+              exceeding your {riskLimit}% max risk per trade.
+            </p>
+            <label className="flex items-center gap-2 text-sm text-red-200">
+              <input
+                type="checkbox"
+                checked={acknowledgeOverride}
+                onChange={(e) => setAcknowledgeOverride(e.target.checked)}
+              />
+              I understand the risk and want to save this trade anyway
+            </label>
+          </div>
+        )}
+
+        <div className="border-t border-gray-700 pt-4">
           <h2 className="text-lg font-semibold mb-3">Pre-Trade Checklist</h2>
           <div className="space-y-2">
             {[
