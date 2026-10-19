@@ -18,6 +18,39 @@ export default function AddTrade() {
   const [fees, setFees] = useState('0')
   const [notes, setNotes] = useState('')
 
+    const [checklist, setChecklist] = useState({
+    clearSetup: false,
+    stopLossSet: false,
+    targetSet: false,
+    sizeFollowsRisk: false,
+    notFomo: false,
+    notRevenge: false,
+    notChasing: false,
+  })
+  const [followedPlan, setFollowedPlan] = useState<boolean | null>(null)
+  const [mistakes, setMistakes] = useState<string[]>([])
+
+  const MISTAKE_OPTIONS = [
+    'No clear setup',
+    'Entered without stop loss',
+    'Moved stop loss',
+    'Ignored risk limit',
+    'Oversized position',
+    'Early exit',
+    'Late exit',
+    'Revenge trade',
+    'FOMO entry',
+    'Chased entry',
+    'Overtrading',
+    'Ignored trading plan',
+  ]
+
+  function toggleMistake(tag: string) {
+    setMistakes((prev) =>
+      prev.includes(tag) ? prev.filter((m) => m !== tag) : [...prev, tag]
+    )
+  }
+
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -55,7 +88,7 @@ export default function AddTrade() {
       takeProfit: tp,
     })
 
-    const { error } = await supabase.from('trades').insert({
+        const { error } = await supabase.from('trades').insert({
       user_id: user?.id,
       pair,
       direction,
@@ -68,6 +101,8 @@ export default function AddTrade() {
       pnl,
       risk_amount: riskAmount,
       rr_planned: rrPlanned,
+      followed_plan: followedPlan,
+      mistakes: mistakes.length > 0 ? mistakes : null,
       notes: notes || null,
     })
 
@@ -187,6 +222,77 @@ export default function AddTrade() {
             className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
             rows={3}
           />
+        </div>
+
+                <div className="border-t border-gray-700 pt-4">
+          <h2 className="text-lg font-semibold mb-3">Pre-Trade Checklist</h2>
+          <div className="space-y-2">
+            {[
+              { key: 'clearSetup', label: 'I have a clear setup' },
+              { key: 'stopLossSet', label: 'Stop loss is defined' },
+              { key: 'targetSet', label: 'Target is defined' },
+              { key: 'sizeFollowsRisk', label: 'Position size follows my risk rule' },
+              { key: 'notFomo', label: 'I am not entering because of FOMO' },
+              { key: 'notRevenge', label: 'I am not revenge trading' },
+              { key: 'notChasing', label: 'I am not chasing a move after missing the original entry' },
+            ].map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={checklist[key as keyof typeof checklist]}
+                  onChange={(e) =>
+                    setChecklist((prev) => ({ ...prev, [key]: e.target.checked }))
+                  }
+                  className="rounded"
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">Did you follow your plan?</label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="followedPlan"
+                checked={followedPlan === true}
+                onChange={() => setFollowedPlan(true)}
+              />
+              Yes
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="followedPlan"
+                checked={followedPlan === false}
+                onChange={() => setFollowedPlan(false)}
+              />
+              No
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-2">Mistakes (if any)</label>
+          <div className="flex flex-wrap gap-2">
+            {MISTAKE_OPTIONS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => toggleMistake(tag)}
+                className={`text-xs px-3 py-1 rounded-full border ${
+                  mistakes.includes(tag)
+                    ? 'bg-red-600 border-red-600 text-white'
+                    : 'border-gray-600 text-gray-300 hover:border-gray-400'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
         </div>
 
         {error && (
