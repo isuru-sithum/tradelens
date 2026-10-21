@@ -111,13 +111,18 @@ export default function Dashboard() {
       >
         + Add Trade
       </Link>
-            <Link
+      <Link
         to="/settings"
         className="inline-block bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-medium mb-6 ml-3"
       >
         Settings
       </Link>
-
+      <Link
+        to="/weekly-review"
+        className="inline-block bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-medium mb-6 ml-3"
+      >
+        Weekly Review
+      </Link>
 
       {!loading && trades.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import AddTrade from './pages/AddTrade'
 import EditTrade from './pages/EditTrade'
 import Settings from './pages/Settings'
+import WeeklyReview from './pages/WeeklyReview'
 
 function App() {
   return (
@@ -46,6 +47,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/weekly-review"
+        element={
+          <ProtectedRoute>
+            <WeeklyReview />
           </ProtectedRoute>
         }
       />

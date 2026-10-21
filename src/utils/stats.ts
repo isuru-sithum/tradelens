@@ -158,3 +158,88 @@ export function getPerformanceBySetup(trades: Trade[]) {
     pnl: Number(pnl.toFixed(2)),
   }))
 }
+
+export function getWeeklyReview(trades: Trade[]) {
+  const oneWeekAgo = new Date()
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+
+  const weekTrades = trades.filter(
+    (t) => new Date(t.trade_date) >= oneWeekAgo && t.pnl !== null
+  )
+
+  const netPnL = weekTrades.reduce((sum, t) => sum + (t.pnl ?? 0), 0)
+  const wins = weekTrades.filter((t) => (t.pnl ?? 0) > 0)
+  const winRate = weekTrades.length > 0 ? (wins.length / weekTrades.length) * 100 : 0
+
+  // Most common mistake
+  const mistakeCounts: Record<string, number> = {}
+  for (const t of weekTrades) {
+    for (const m of t.mistakes ?? []) {
+      mistakeCounts[m] = (mistakeCounts[m] ?? 0) + 1
+    }
+  }
+  const mostCommonMistake =
+    Object.entries(mistakeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+
+  // Best and worst performing setup this week
+  const setupPnL: Record<string, number> = {}
+  for (const t of weekTrades) {
+    if (t.setup) {
+      setupPnL[t.setup] = (setupPnL[t.setup] ?? 0) + (t.pnl ?? 0)
+    }
+  }
+  const sortedSetups = Object.entries(setupPnL).sort((a, b) => b[1] - a[1])
+  const bestSetup = sortedSetups[0]?.[0] ?? null
+  const worstSetup = sortedSetups[sortedSetups.length - 1]?.[0] ?? null
+
+  // Rule violations: trades where followed_plan was false
+  const ruleViolations = weekTrades.filter((t) => t.followed_plan === false).length
+
+  // Simple improvement suggestions based on the data
+  const suggestions: string[] = []
+
+  if (mostCommonMistake) {
+    suggestions.push(
+      `Your most frequent mistake this week was "${mostCommonMistake}" — consider adding a specific checklist reminder for it.`
+    )
+  }
+
+  const followedWeek = weekTrades.filter((t) => t.followed_plan === true)
+  const brokeWeek = weekTrades.filter((t) => t.followed_plan === false)
+  if (followedWeek.length > 0 && brokeWeek.length > 0) {
+    const followedAvg =
+      followedWeek.reduce((s, t) => s + (t.pnl ?? 0), 0) / followedWeek.length
+    const brokeAvg =
+      brokeWeek.reduce((s, t) => s + (t.pnl ?? 0), 0) / brokeWeek.length
+    if (brokeAvg > followedAvg) {
+      suggestions.push(
+        'Your rule-breaking trades performed better than your disciplined ones this week — this is worth reviewing carefully rather than taking as encouragement to break rules more often.'
+      )
+    } else {
+      suggestions.push(
+        'Trades where you followed your plan outperformed the ones where you didn\'t — a good sign that your current rules are working.'
+      )
+    }
+  }
+
+  if (ruleViolations > 0) {
+    suggestions.push(
+      `You broke your trading plan on ${ruleViolations} trade${ruleViolations > 1 ? 's' : ''} this week.`
+    )
+  }
+
+  if (weekTrades.length === 0) {
+    suggestions.push('No closed trades this week — nothing to review yet.')
+  }
+
+  return {
+    tradesCount: weekTrades.length,
+    netPnL,
+    winRate,
+    mostCommonMistake,
+    bestSetup,
+    worstSetup,
+    ruleViolations,
+    suggestions,
+  }
+}
