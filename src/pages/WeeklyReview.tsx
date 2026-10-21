@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useTrades } from '../hooks/useTrades'
 import { getWeeklyReview } from '../utils/stats'
+import Navbar from '../components/Navbar'
 
 export default function WeeklyReview() {
   const { trades, loading } = useTrades()
@@ -11,12 +12,10 @@ export default function WeeklyReview() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <Link to="/dashboard" className="text-blue-400 hover:underline text-sm mb-4 inline-block">
-        ← Back to Dashboard
-      </Link>
-
-      <h1 className="text-2xl font-bold mb-6">Weekly Review</h1>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <Navbar />
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">Weekly Review</h1>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-gray-800 rounded-lg p-4">
@@ -66,6 +65,7 @@ export default function WeeklyReview() {
             </li>
           ))}
         </ul>
+      </div>
       </div>
     </div>
   )

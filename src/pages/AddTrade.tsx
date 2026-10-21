@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { calculatePnL, calculateRiskAmount, calculatePlannedRR } from '../utils/calculations'
+import Navbar from '../components/Navbar'
 
 export default function AddTrade() {
   const { user } = useAuth()
@@ -162,11 +163,10 @@ export default function AddTrade() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <Link to="/dashboard" className="text-blue-400 hover:underline text-sm mb-4 inline-block">
-        ← Back to Dashboard
-      </Link>
-      <h1 className="text-2xl font-bold mb-6">Add Trade</h1>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <Navbar />
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">Add Trade</h1>
 
       <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
         <div>
@@ -384,6 +384,7 @@ export default function AddTrade() {
           {loading ? 'Saving...' : 'Save Trade'}
         </button>
       </form>
+      </div>
     </div>
   )
 }

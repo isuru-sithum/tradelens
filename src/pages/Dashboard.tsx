@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { calculateStats } from '../utils/stats'
 import FollowedPlanChart from '../components/FollowedPlanChart'
 import TradeCharts from '../components/TradeCharts'
+import Navbar from '../components/Navbar'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -72,9 +73,7 @@ export default function Dashboard() {
 
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-  }
+  
 
     async function handleDelete(id: string) {
     const confirmed = window.confirm('Delete this trade? This cannot be undone.')
@@ -92,37 +91,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm font-medium"
-        >
-          Log out
-        </button>
-      </div>
-
-      <p className="text-gray-300 mb-4">Logged in as: {user?.email}</p>
-
-      <Link
-        to="/add-trade"
-        className="inline-block bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-sm font-medium mb-6"
-      >
-        + Add Trade
-      </Link>
-      <Link
-        to="/settings"
-        className="inline-block bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-medium mb-6 ml-3"
-      >
-        Settings
-      </Link>
-      <Link
-        to="/weekly-review"
-        className="inline-block bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-sm font-medium mb-6 ml-3"
-      >
-        Weekly Review
-      </Link>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <Navbar />
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
       {!loading && trades.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -377,6 +349,7 @@ export default function Dashboard() {
           </table>
         </div>
       )}
+      </div>
     </div>
   )
 }
