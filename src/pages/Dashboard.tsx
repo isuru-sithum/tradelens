@@ -11,7 +11,15 @@ export default function Dashboard() {
   const { user } = useAuth()
   const { trades, loading, error, refetch } = useTrades()
 
-    const [startingBalance, setStartingBalance] = useState<number | null>(null)
+  const [filterPair, setFilterPair] = useState('')
+  const [filterSetup, setFilterSetup] = useState('')
+  const [filterDirection, setFilterDirection] = useState('')
+  const [filterResult, setFilterResult] = useState('')
+  const [filterFollowedPlan, setFilterFollowedPlan] = useState('')
+  const [filterStartDate, setFilterStartDate] = useState('')
+  const [filterEndDate, setFilterEndDate] = useState('')
+
+  const [startingBalance, setStartingBalance] = useState<number | null>(null)
 
   useEffect(() => {
     async function loadBalance() {
@@ -28,6 +36,40 @@ export default function Dashboard() {
   }, [user])
 
   const stats = calculateStats(trades)
+
+  const filteredTrades = trades.filter((trade) => {
+    if (filterPair && !trade.pair.toLowerCase().includes(filterPair.toLowerCase())) {
+      return false
+    }
+    if (filterSetup && trade.setup !== filterSetup) {
+      return false
+    }
+    if (filterDirection && trade.direction !== filterDirection) {
+      return false
+    }
+    if (filterResult) {
+      const pnl = trade.pnl
+      if (filterResult === 'win' && !(pnl !== null && pnl > 0)) return false
+      if (filterResult === 'loss' && !(pnl !== null && pnl < 0)) return false
+      if (filterResult === 'breakeven' && !(pnl !== null && pnl === 0)) return false
+    }
+    if (filterFollowedPlan) {
+      const wanted = filterFollowedPlan === 'yes'
+      if (trade.followed_plan !== wanted) return false
+    }
+    if (filterStartDate && new Date(trade.trade_date) < new Date(filterStartDate)) {
+      return false
+    }
+    if (filterEndDate && new Date(trade.trade_date) > new Date(filterEndDate)) {
+      return false
+    }
+    return true
+  })
+
+  const uniqueSetups = Array.from(
+    new Set(trades.map((t) => t.setup).filter((s): s is string => !!s))
+  )
+
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleLogout() {
@@ -164,16 +206,123 @@ export default function Dashboard() {
         </div>
       )}
 
+      <div className="bg-gray-800 rounded-lg p-4 mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Pair</label>
+          <input
+            value={filterPair}
+            onChange={(e) => setFilterPair(e.target.value)}
+            placeholder="e.g. BTC"
+            className="w-full rounded bg-gray-700 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Setup</label>
+          <select
+            value={filterSetup}
+            onChange={(e) => setFilterSetup(e.target.value)}
+            className="w-full rounded bg-gray-700 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All</option>
+            {uniqueSetups.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Direction</label>
+          <select
+            value={filterDirection}
+            onChange={(e) => setFilterDirection(e.target.value)}
+            className="w-full rounded bg-gray-700 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All</option>
+            <option value="long">Long</option>
+            <option value="short">Short</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Result</label>
+          <select
+            value={filterResult}
+            onChange={(e) => setFilterResult(e.target.value)}
+            className="w-full rounded bg-gray-700 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All</option>
+            <option value="win">Win</option>
+            <option value="loss">Loss</option>
+            <option value="breakeven">Break-even</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Followed Plan</label>
+          <select
+            value={filterFollowedPlan}
+            onChange={(e) => setFilterFollowedPlan(e.target.value)}
+            className="w-full rounded bg-gray-700 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">All</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">From</label>
+          <input
+            type="date"
+            value={filterStartDate}
+            onChange={(e) => setFilterStartDate(e.target.value)}
+            className="w-full rounded bg-gray-700 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">To</label>
+          <input
+            type="date"
+            value={filterEndDate}
+            onChange={(e) => setFilterEndDate(e.target.value)}
+            className="w-full rounded bg-gray-700 px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="flex items-end">
+          <button
+            onClick={() => {
+              setFilterPair('')
+              setFilterSetup('')
+              setFilterDirection('')
+              setFilterResult('')
+              setFilterFollowedPlan('')
+              setFilterStartDate('')
+              setFilterEndDate('')
+            }}
+            className="text-sm text-gray-400 hover:text-white underline"
+          >
+            Clear filters
+          </button>
+        </div>
+      </div>
+
       <h2 className="text-xl font-semibold mb-3">Your Trades</h2>
 
       {loading && <p className="text-gray-400">Loading trades...</p>}
       {error && <p className="text-red-400">{error}</p>}
 
-      {!loading && !error && trades.length === 0 && (
-        <p className="text-gray-400">No trades yet. Add your first trade.</p>
+      {!loading && !error && filteredTrades.length === 0 && (
+        <p className="text-gray-400">
+          {trades.length === 0 ? 'No trades yet. Add your first trade.' : 'No trades match your filters.'}
+        </p>
       )}
 
-      {!loading && trades.length > 0 && (
+      {!loading && filteredTrades.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse">
             <thead>
@@ -189,7 +338,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {trades.map((trade) => (
+              {filteredTrades.map((trade) => (
                 <tr key={trade.id} className="border-b border-gray-800">
                   <td className="py-2 pr-4">
                     {new Date(trade.trade_date).toLocaleDateString()}
