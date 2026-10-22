@@ -300,7 +300,7 @@ export default function Dashboard() {
       )}
 
       {!loading && filteredTrades.length > 0 && (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-sm text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-700 text-gray-400">
@@ -347,6 +347,61 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+        </div>
+         )}
+       {!loading && filteredTrades.length > 0 && (
+        <div className="md:hidden space-y-3">
+          {filteredTrades.map((trade) => (
+            <div key={trade.id} className="bg-gray-800 rounded-lg p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="font-semibold">{trade.pair}</p>
+                  <p className="text-xs text-gray-400 capitalize">
+                    {trade.direction} • {new Date(trade.trade_date).toLocaleDateString()}
+                  </p>
+                </div>
+                <p
+                  className={`font-bold ${
+                    trade.pnl !== null && trade.pnl >= 0
+                      ? 'text-green-400'
+                      : trade.pnl !== null
+                      ? 'text-red-400'
+                      : 'text-gray-500'
+                  }`}
+                >
+                  {trade.pnl !== null ? trade.pnl.toFixed(2) : '—'}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-xs text-gray-400 mb-3">
+                <div>
+                  <p className="text-gray-500">Entry</p>
+                  <p className="text-gray-200">{trade.entry_price}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Exit</p>
+                  <p className="text-gray-200">{trade.exit_price ?? '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Size</p>
+                  <p className="text-gray-200">{trade.position_size}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-4 text-sm">
+                <Link to={`/edit-trade/${trade.id}`} className="text-blue-400">
+                  Edit
+                </Link>
+                <button
+                  onClick={() => handleDelete(trade.id)}
+                  disabled={deletingId === trade.id}
+                  className="text-red-400 disabled:opacity-50"
+                >
+                  {deletingId === trade.id ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
       </div>
