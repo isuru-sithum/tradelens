@@ -15,7 +15,8 @@ export default function AddTrade() {
   const [exitPrice, setExitPrice] = useState('')
   const [stopLoss, setStopLoss] = useState('')
   const [takeProfit, setTakeProfit] = useState('')
-  const [positionSize, setPositionSize] = useState('')
+  const [margin, setMargin] = useState('')
+  const [leverage, setLeverage] = useState('1')
   const [fees, setFees] = useState('0')
   const [setup, setSetup] = useState('')
   const [notes, setNotes] = useState('')
@@ -56,34 +57,50 @@ export default function AddTrade() {
   const [startingBalance, setStartingBalance] = useState<number | null>(null)
   const [riskLimit, setRiskLimit] = useState<number | null>(null)
   const [acknowledgeOverride, setAcknowledgeOverride] = useState(false)
+  const [currentBalance, setCurrentBalance] = useState<number | null>(null)
 
   useEffect(() => {
-    async function loadProfile() {
+    async function loadProfileAndBalance() {
       if (!user) return
-      const { data } = await supabase
+
+      const { data: profile } = await supabase
         .from('profiles')
         .select('starting_balance, risk_per_trade_percent')
         .eq('id', user.id)
         .maybeSingle()
 
-      if (data) {
-        setStartingBalance(data.starting_balance)
-        setRiskLimit(data.risk_per_trade_percent)
+      const { data: existingTrades } = await supabase
+        .from('trades')
+        .select('pnl')
+
+      if (profile) {
+        setStartingBalance(profile.starting_balance)
+        setRiskLimit(profile.risk_per_trade_percent)
+
+        const totalPnL = (existingTrades ?? []).reduce(
+          (sum, t) => sum + (t.pnl ?? 0),
+          0
+        )
+        setCurrentBalance(profile.starting_balance + totalPnL)
       }
     }
-    loadProfile()
+    loadProfileAndBalance()
   }, [user])
 
-    const plannedRiskAmount = calculateRiskAmount({
+  const marginNum = parseFloat(margin) || 0
+  const leverageNum = parseFloat(leverage) || 1
+  const calculatedPositionSize = marginNum * leverageNum
+
+  const plannedRiskAmount = calculateRiskAmount({
     direction,
     entryPrice: parseFloat(entryPrice) || 0,
     stopLoss: stopLoss ? parseFloat(stopLoss) : null,
-    positionSize: parseFloat(positionSize) || 0,
+    positionSize: calculatedPositionSize,
   })
 
   const plannedRiskPercent =
-    plannedRiskAmount !== null && startingBalance
-      ? (plannedRiskAmount / startingBalance) * 100
+    plannedRiskAmount !== null && currentBalance
+      ? (plannedRiskAmount / currentBalance) * 100
       : null
 
   const exceedsRiskLimit =
@@ -103,15 +120,14 @@ export default function AddTrade() {
     }
 
     const entryNum = parseFloat(entryPrice)
-    const sizeNum = parseFloat(positionSize)
     const feesNum = parseFloat(fees)
 
     if (entryNum <= 0) {
       setError('Entry price must be greater than zero.')
       return
     }
-    if (sizeNum <= 0) {
-      setError('Position size must be greater than zero.')
+    if (marginNum <= 0) {
+      setError('Margin must be greater than zero.')
       return
     }
     if (feesNum < 0) {
@@ -126,7 +142,7 @@ export default function AddTrade() {
     const exit = exitPrice ? parseFloat(exitPrice) : null
     const sl = stopLoss ? parseFloat(stopLoss) : null
     const tp = takeProfit ? parseFloat(takeProfit) : null
-    const size = parseFloat(positionSize)
+    const size = calculatedPositionSize
     const feeAmount = parseFloat(fees)
 
     const pnl = calculatePnL({
@@ -155,6 +171,7 @@ export default function AddTrade() {
       user_id: user?.id,
       pair,
       direction,
+      leverage: leverageNum,
       setup: setup || null,
       entry_price: entry,
       exit_price: exit,
@@ -268,15 +285,38 @@ export default function AddTrade() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm mb-1">Position Size</label>
+            <label className="block text-sm mb-1">Margin</label>
             <input
               required
               type="number"
               step="any"
               min="0"
-              value={positionSize}
-              onChange={(e) => setPositionSize(e.target.value)}
+              value={margin}
+              onChange={(e) => setMargin(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Leverage</label>
+            <input
+              type="number"
+              step="any"
+              min="1"
+              value={leverage}
+              onChange={(e) => setLeverage(e.target.value)}
+              className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">Use 1 for spot trades.</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm mb-1">Position Size (calculated)</label>
+            <input
+              readOnly
+              value={calculatedPositionSize.toFixed(4)}
+              className="w-full rounded bg-gray-900 px-3 py-2 text-gray-400 cursor-not-allowed"
             />
           </div>
           <div>

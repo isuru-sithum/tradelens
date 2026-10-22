@@ -4,6 +4,7 @@ type PnLInput = {
   exitPrice: number | null
   positionSize: number
   fees: number
+  leverage: number
 }
 
 export function calculatePnL({

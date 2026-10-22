@@ -16,6 +16,7 @@ export default function EditTrade() {
   const [takeProfit, setTakeProfit] = useState('')
   const [positionSize, setPositionSize] = useState('')
   const [fees, setFees] = useState('0')
+  const [leverage, setLeverage] = useState('1')
   const [setup, setSetup] = useState('')
   const [notes, setNotes] = useState('')
 
@@ -75,6 +76,7 @@ export default function EditTrade() {
         setTakeProfit(data.take_profit !== null ? String(data.take_profit) : '')
         setPositionSize(String(data.position_size))
         setFees(String(data.fees))
+        setLeverage(String(data.leverage))
         setSetup(data.setup ?? '')
         setNotes(data.notes ?? '')
         setFollowedPlan(data.followed_plan)
@@ -116,15 +118,25 @@ export default function EditTrade() {
     const size = parseFloat(positionSize)
     const feeAmount = parseFloat(fees)
 
-    const pnl = calculatePnL({ direction, entryPrice: entry, exitPrice: exit, positionSize: size, fees: feeAmount })
+    const leverageNum = parseFloat(leverage) || 1
+
+    const pnl = calculatePnL({
+      direction,
+      entryPrice: entry,
+      exitPrice: exit,
+      positionSize: size,
+      fees: feeAmount,
+      leverage: leverageNum,
+    })
     const riskAmount = calculateRiskAmount({ direction, entryPrice: entry, stopLoss: sl, positionSize: size })
     const rrPlanned = calculatePlannedRR({ direction, entryPrice: entry, stopLoss: sl, takeProfit: tp })
 
-        const { error } = await supabase
+    const { error } = await supabase
       .from('trades')
       .update({
         pair,
         direction,
+        leverage: leverageNum,
         setup: setup || null,
         entry_price: entry,
         exit_price: exit,
@@ -255,6 +267,19 @@ export default function EditTrade() {
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">Leverage</label>
+          <input
+            type="number"
+            step="any"
+            min="1"
+            value={leverage}
+            onChange={(e) => setLeverage(e.target.value)}
+            className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <p className="text-xs text-gray-500 mt-1">Use 1 for spot trades.</p>
         </div>
 
         <div>
