@@ -102,8 +102,25 @@ export default function AddTrade() {
       return
     }
 
+    const entryNum = parseFloat(entryPrice)
+    const sizeNum = parseFloat(positionSize)
+    const feesNum = parseFloat(fees)
+
+    if (entryNum <= 0) {
+      setError('Entry price must be greater than zero.')
+      return
+    }
+    if (sizeNum <= 0) {
+      setError('Position size must be greater than zero.')
+      return
+    }
+    if (feesNum < 0) {
+      setError('Fees cannot be negative.')
+      return
+    }
+
     setError(null)
-    setLoading(true)  
+    setLoading(true)
 
     const entry = parseFloat(entryPrice)
     const exit = exitPrice ? parseFloat(exitPrice) : null
@@ -208,6 +225,7 @@ export default function AddTrade() {
               required
               type="number"
               step="any"
+              min="0"
               value={entryPrice}
               onChange={(e) => setEntryPrice(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
@@ -255,6 +273,7 @@ export default function AddTrade() {
               required
               type="number"
               step="any"
+              min="0"
               value={positionSize}
               onChange={(e) => setPositionSize(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
@@ -265,6 +284,7 @@ export default function AddTrade() {
             <input
               type="number"
               step="any"
+              min="0"
               value={fees}
               onChange={(e) => setFees(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"

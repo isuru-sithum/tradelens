@@ -19,7 +19,7 @@ export default function EditTrade() {
   const [setup, setSetup] = useState('')
   const [notes, setNotes] = useState('')
 
-    const [checklist, setChecklist] = useState({
+  const [checklist, setChecklist] = useState({
     clearSetup: false,
     stopLossSet: false,
     targetSet: false,
@@ -88,6 +88,24 @@ export default function EditTrade() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    const entryNum = parseFloat(entryPrice)
+    const sizeNum = parseFloat(positionSize)
+    const feesNum = parseFloat(fees)
+
+    if (entryNum <= 0) {
+      setError('Entry price must be greater than zero.')
+      return
+    }
+    if (sizeNum <= 0) {
+      setError('Position size must be greater than zero.')
+      return
+    }
+    if (feesNum < 0) {
+      setError('Fees cannot be negative.')
+      return
+    }
+
     setError(null)
     setSaving(true)
 
@@ -172,6 +190,7 @@ export default function EditTrade() {
               required
               type="number"
               step="any"
+              min="0"
               value={entryPrice}
               onChange={(e) => setEntryPrice(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
@@ -219,6 +238,7 @@ export default function EditTrade() {
               required
               type="number"
               step="any"
+              min="0"
               value={positionSize}
               onChange={(e) => setPositionSize(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
@@ -229,6 +249,7 @@ export default function EditTrade() {
             <input
               type="number"
               step="any"
+              min="0"
               value={fees}
               onChange={(e) => setFees(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
