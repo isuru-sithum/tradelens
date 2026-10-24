@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
 import { calculatePnL, calculateRiskAmount, calculatePlannedRR } from '../utils/calculations'
@@ -54,7 +54,6 @@ export default function AddTrade() {
     )
   }
 
-  const [startingBalance, setStartingBalance] = useState<number | null>(null)
   const [riskLimit, setRiskLimit] = useState<number | null>(null)
   const [acknowledgeOverride, setAcknowledgeOverride] = useState(false)
   const [currentBalance, setCurrentBalance] = useState<number | null>(null)
@@ -74,7 +73,6 @@ export default function AddTrade() {
         .select('pnl')
 
       if (profile) {
-        setStartingBalance(profile.starting_balance)
         setRiskLimit(profile.risk_per_trade_percent)
 
         const totalPnL = (existingTrades ?? []).reduce(

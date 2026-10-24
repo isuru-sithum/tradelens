@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import { useTrades } from '../hooks/useTrades'
 import { getWeeklyReview } from '../utils/stats'
 import Navbar from '../components/Navbar'

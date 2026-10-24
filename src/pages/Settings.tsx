@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
-import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 
 export default function Settings() {
