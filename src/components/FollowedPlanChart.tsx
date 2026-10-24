@@ -71,7 +71,7 @@ export default function FollowedPlanChart({
               <Tooltip
                 contentStyle={{ backgroundColor: '#1f2937', border: 'none' }}
               />
-              <Bar dataKey="Win Rate %" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+             <Bar dataKey="Win Rate %" fill="#3b82f6" fillOpacity={0.6} radius={[4, 4, 0, 0]} barSize={50} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -86,7 +86,7 @@ export default function FollowedPlanChart({
               <Tooltip
                 contentStyle={{ backgroundColor: '#1f2937', border: 'none' }}
               />
-              <Bar dataKey="Avg PnL" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Avg PnL" fill="#10b981" fillOpacity={0.6} radius={[4, 4, 0, 0]} barSize={50} />              
             </BarChart>
           </ResponsiveContainer>
         </div>

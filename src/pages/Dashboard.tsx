@@ -75,7 +75,7 @@ export default function Dashboard() {
 
   
 
-    async function handleDelete(id: string) {
+  async function handleDelete(id: string) {
     const confirmed = window.confirm('Delete this trade? This cannot be undone.')
     if (!confirmed) return
 

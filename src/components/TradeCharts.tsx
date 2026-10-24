@@ -30,7 +30,7 @@ export default function TradeCharts({ trades }: { trades: Trade[] }) {
   const setupData = getPerformanceBySetup(trades)
 
   return (
-    <div className="grid md:grid-cols-2 gap-6 mb-8">
+    <div className="grid md:grid-cols-2 gap-6 mb-8 mt-8">
       <div className="bg-gray-800 rounded-lg p-6">
         <h3 className="text-base font-semibold mb-4">Cumulative PnL Over Time</h3>
         {cumulativeData.length === 0 ? (
@@ -65,14 +65,15 @@ export default function TradeCharts({ trades }: { trades: Trade[] }) {
               <XAxis dataKey="month" stroke="#9ca3af" fontSize={11} />
               <YAxis stroke="#9ca3af" fontSize={11} />
               <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none' }} />
-              <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="pnl" radius={[4, 4, 0, 0]} barSize={40}>
                 {monthlyData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={entry.pnl >= 0 ? '#10b981' : '#ef4444'}
+                    fillOpacity={0.6}
                   />
                 ))}
-              </Bar>
+              </Bar>              
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -95,8 +96,12 @@ export default function TradeCharts({ trades }: { trades: Trade[] }) {
                 label
               >
                 {distributionData.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={PIE_COLORS[index % PIE_COLORS.length]}
+                    fillOpacity={0.7}
+                  />
+                ))}                
               </Pie>
               <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none' }} />
               <Legend />
@@ -124,14 +129,15 @@ export default function TradeCharts({ trades }: { trades: Trade[] }) {
                 width={100}
               />
               <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: 'none' }} />
-              <Bar dataKey="pnl" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="pnl" radius={[0, 4, 4, 0]} barSize={24}>
                 {setupData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={entry.pnl >= 0 ? '#10b981' : '#ef4444'}
+                    fillOpacity={0.6}
                   />
                 ))}
-              </Bar>
+              </Bar>              
             </BarChart>
           </ResponsiveContainer>
         )}
