@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../context/AuthContext'
+import { useState, useEffect } from 'react'
 
 export default function Login() {
   const { user } = useAuth()
@@ -27,8 +27,13 @@ export default function Login() {
       setError(error.message)
     }
   }
+  useEffect(() => {
     if (user) {
-    navigate('/dashboard', { replace: true })
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, navigate])
+
+  if (user) {
     return null
   }
 
@@ -81,9 +86,15 @@ export default function Login() {
         >
           {loading ? 'Logging in...' : 'Log in'}
         </button>
-                <p className="text-sm text-right">
+        <p className="text-sm text-right">
           <Link to="/forgot-password" className="text-blue-400 hover:underline">
             Forgot password?
+          </Link>
+        </p>
+        <p className="text-sm text-gray-400 text-center">
+          Don't have an account?{' '}
+          <Link to="/signup" className="text-blue-400 hover:underline">
+            Sign up
           </Link>
         </p>
       </form>
