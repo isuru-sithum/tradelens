@@ -20,6 +20,15 @@ export default function EditTrade() {
   const [setup, setSetup] = useState('')
   const [notes, setNotes] = useState('')
 
+  const [entryScreenshotPath, setEntryScreenshotPath] = useState<string | null>(null)
+  const [exitScreenshotPath, setExitScreenshotPath] = useState<string | null>(null)
+  const [entryScreenshotUrl, setEntryScreenshotUrl] = useState<string | null>(null)
+  const [exitScreenshotUrl, setExitScreenshotUrl] = useState<string | null>(null)
+  const [entryScreenshotFile, setEntryScreenshotFile] = useState<File | null>(null)
+  const [exitScreenshotFile, setExitScreenshotFile] = useState<File | null>(null)
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false)
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null)
+
   const [checklist, setChecklist] = useState({
     clearSetup: false,
     stopLossSet: false,
@@ -51,6 +60,25 @@ export default function EditTrade() {
     setMistakes((prev) =>
       prev.includes(tag) ? prev.filter((m) => m !== tag) : [...prev, tag]
     )
+  }
+
+  async function uploadScreenshot(file: File, type: 'entry' | 'exit'): Promise<string | null> {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return null
+
+    const fileExt = file.name.split('.').pop()
+    const filePath = `${user.id}/${type}-${id}-${Date.now()}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('trade-screenshots')
+      .upload(filePath, file)
+
+    if (uploadError) {
+      setError(`Failed to upload ${type} screenshot: ${uploadError.message}`)
+      return null
+    }
+
+    return filePath
   }
 
   const [loadingTrade, setLoadingTrade] = useState(true)
@@ -90,6 +118,21 @@ export default function EditTrade() {
         setNotes(data.notes ?? '')
         setFollowedPlan(data.followed_plan)
         setMistakes(data.mistakes ?? [])
+        
+        if (data.entry_screenshot_url) {
+          setEntryScreenshotPath(data.entry_screenshot_url)
+          const { data: signedData } = await supabase.storage
+            .from('trade-screenshots')
+            .createSignedUrl(data.entry_screenshot_url, 3600)
+          setEntryScreenshotUrl(signedData?.signedUrl ?? null)
+        }
+        if (data.exit_screenshot_url) {
+          setExitScreenshotPath(data.exit_screenshot_url)
+          const { data: signedData } = await supabase.storage
+            .from('trade-screenshots')
+            .createSignedUrl(data.exit_screenshot_url, 3600)
+          setExitScreenshotUrl(signedData?.signedUrl ?? null)
+        }
       }
 
       const { data: { user } } = await supabase.auth.getUser()
@@ -168,6 +211,23 @@ export default function EditTrade() {
     setError(null)
     setSaving(true)
 
+    let newEntryPath = entryScreenshotPath
+    let newExitPath = exitScreenshotPath
+
+    if (entryScreenshotFile) {
+      setUploadingScreenshot(true)
+      const uploaded = await uploadScreenshot(entryScreenshotFile, 'entry')
+      setUploadingScreenshot(false)
+      if (uploaded) newEntryPath = uploaded
+    }
+
+    if (exitScreenshotFile) {
+      setUploadingScreenshot(true)
+      const uploaded = await uploadScreenshot(exitScreenshotFile, 'exit')
+      setUploadingScreenshot(false)
+      if (uploaded) newExitPath = uploaded
+    }
+
     const entry = parseFloat(entryPrice)
     const exit = exitPrice ? parseFloat(exitPrice) : null
     const sl = stopLoss ? parseFloat(stopLoss) : null
@@ -204,6 +264,8 @@ export default function EditTrade() {
         direction,
         leverage: leverageNum,
         setup: setup || null,
+        entry_screenshot_url: newEntryPath,
+        exit_screenshot_url: newExitPath,
         entry_price: entry,
         exit_price: exit,
         stop_loss: sl,
@@ -370,6 +432,44 @@ export default function EditTrade() {
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm mb-1">Entry Screenshot</label>
+              {entryScreenshotUrl && (
+                <img
+                  src={entryScreenshotUrl}
+                  alt="Entry screenshot"
+                  onClick={() => setLightboxUrl(entryScreenshotUrl)}
+                  className="w-full rounded mb-2 max-h-48 object-cover cursor-pointer hover:opacity-80"
+                />
+              )}              
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setEntryScreenshotFile(e.target.files?.[0] ?? null)}
+                className="w-full text-sm text-gray-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Exit Screenshot</label>
+              {exitScreenshotUrl && (
+                <img
+                  src={exitScreenshotUrl}
+                  alt="Exit screenshot"
+                  onClick={() => setLightboxUrl(exitScreenshotUrl)}
+                  className="w-full rounded mb-2 max-h-48 object-cover cursor-pointer hover:opacity-80"
+                />
+              )}              
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setExitScreenshotFile(e.target.files?.[0] ?? null)}
+                className="w-full text-sm text-gray-400"
+              />
+            </div>
+          </div>
+
           {exceedsRiskLimit && (
             <div className="bg-red-900/40 border border-red-600 rounded p-4 space-y-2">
               <p className="text-red-300 font-medium">
@@ -472,6 +572,19 @@ export default function EditTrade() {
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
+
+        {lightboxUrl && (
+          <div
+            onClick={() => setLightboxUrl(null)}
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 cursor-pointer p-4"
+          >
+            <img
+              src={lightboxUrl}
+              alt="Full size screenshot"
+              className="max-w-full max-h-full rounded"
+            />
+          </div>
+        )}
       </div>
     </div>
   )
