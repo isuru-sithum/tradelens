@@ -569,7 +569,7 @@ export default function EditTrade() {
             disabled={saving}
             className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-6 py-2 rounded font-medium"
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            {uploadingScreenshot ? 'Uploading screenshot...' : saving ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
 

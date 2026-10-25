@@ -475,7 +475,7 @@ export default function AddTrade() {
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-6 py-2 rounded mt-6 font-medium"
         >
-          {loading ? 'Saving...' : 'Save Trade'}
+          {uploadingScreenshot ? 'Uploading screenshot...' : loading ? 'Saving...' : 'Save Trade'}
         </button>
       </form>
       </div>
