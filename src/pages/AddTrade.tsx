@@ -21,7 +21,10 @@ export default function AddTrade() {
   const [setup, setSetup] = useState('')
   const [notes, setNotes] = useState('')
 
-    const [checklist, setChecklist] = useState({
+  const [entryScreenshotFile, setEntryScreenshotFile] = useState<File | null>(null)
+  const [uploadingScreenshot, setUploadingScreenshot] = useState(false)
+
+  const [checklist, setChecklist] = useState({
     clearSetup: false,
     stopLossSet: false,
     targetSet: false,
@@ -53,6 +56,24 @@ export default function AddTrade() {
       prev.includes(tag) ? prev.filter((m) => m !== tag) : [...prev, tag]
     )
   }
+
+  async function uploadScreenshot(file: File): Promise<string | null> {
+    if (!user) return null
+
+    const fileExt = file.name.split('.').pop()
+    const filePath = `${user.id}/entry-${Date.now()}.${fileExt}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('trade-screenshots')
+      .upload(filePath, file)
+
+    if (uploadError) {
+      setError(`Failed to upload screenshot: ${uploadError.message}`)
+      return null
+    }
+
+    return filePath
+  }  
 
   const [riskLimit, setRiskLimit] = useState<number | null>(null)
   const [acknowledgeOverride, setAcknowledgeOverride] = useState(false)
@@ -136,6 +157,13 @@ export default function AddTrade() {
     setError(null)
     setLoading(true)
 
+    let entryScreenshotPath: string | null = null
+    if (entryScreenshotFile) {
+      setUploadingScreenshot(true)
+      entryScreenshotPath = await uploadScreenshot(entryScreenshotFile)
+      setUploadingScreenshot(false)
+    }
+
     const entry = parseFloat(entryPrice)
     const exit = exitPrice ? parseFloat(exitPrice) : null
     const sl = stopLoss ? parseFloat(stopLoss) : null
@@ -171,6 +199,7 @@ export default function AddTrade() {
       direction,
       leverage: leverageNum,
       setup: setup || null,
+      entry_screenshot_url: entryScreenshotPath,
       entry_price: entry,
       exit_price: exit,
       stop_loss: sl,
@@ -332,6 +361,16 @@ export default function AddTrade() {
             onChange={(e) => setNotes(e.target.value)}
             className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
             rows={3}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm mb-1">Entry Screenshot</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setEntryScreenshotFile(e.target.files?.[0] ?? null)}
+            className="w-full text-sm text-gray-400"
           />
         </div>        
 
