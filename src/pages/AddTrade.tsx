@@ -200,25 +200,27 @@ export default function AddTrade() {
       <div className="p-8">
         <h1 className="text-2xl font-bold mb-6">Add Trade</h1>
 
-      <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
-        <div>
-          <label className="block text-sm mb-1">Pair</label>
-          <input
-            required
-            placeholder="BTC/USDT"
-            value={pair}
-            onChange={(e) => setPair(e.target.value)}
-            className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Setup / Strategy</label>
-          <input
-            placeholder="Breakout, trend continuation, range reversal..."
-            value={setup}
-            onChange={(e) => setSetup(e.target.value)}
-            className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-          />
+      <form onSubmit={handleSubmit} className="w-full space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm mb-1">Pair</label>
+            <input
+              required
+              placeholder="BTC/USDT"
+              value={pair}
+              onChange={(e) => setPair(e.target.value)}
+              className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Setup / Strategy</label>
+            <input
+              placeholder="Breakout, trend continuation, range reversal..."
+              value={setup}
+              onChange={(e) => setSetup(e.target.value)}
+              className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
         </div>
 
         <div>
@@ -233,7 +235,7 @@ export default function AddTrade() {
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm mb-1">Entry Price</label>
             <input
@@ -256,9 +258,6 @@ export default function AddTrade() {
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm mb-1">Stop Loss</label>
             <input
@@ -281,7 +280,7 @@ export default function AddTrade() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm mb-1">Margin</label>
             <input
@@ -304,13 +303,9 @@ export default function AddTrade() {
               onChange={(e) => setLeverage(e.target.value)}
               className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="text-xs text-gray-500 mt-1">Use 1 for spot trades.</p>
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm mb-1">Position Size (calculated)</label>
+            <label className="block text-sm mb-1">Position Size</label>
             <input
               readOnly
               value={calculatedPositionSize.toFixed(4)}
@@ -338,9 +333,10 @@ export default function AddTrade() {
             className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
             rows={3}
           />
-        </div>
+        </div>        
 
-                {exceedsRiskLimit && (
+        {exceedsRiskLimit && (
+
           <div className="bg-red-900/40 border border-red-600 rounded p-4 space-y-2">
             <p className="text-red-300 font-medium">
               ⚠ This trade risks {plannedRiskPercent?.toFixed(2)}% of your balance,
@@ -359,7 +355,7 @@ export default function AddTrade() {
 
         <div className="border-t border-gray-700 pt-4">
           <h2 className="text-lg font-semibold mb-3">Pre-Trade Checklist</h2>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {[
               { key: 'clearSetup', label: 'I have a clear setup' },
               { key: 'stopLossSet', label: 'Stop loss is defined' },
@@ -434,10 +430,11 @@ export default function AddTrade() {
           </p>
         )}
 
+
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-6 py-2 rounded font-medium"
+          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-6 py-2 rounded mt-6 font-medium"
         >
           {loading ? 'Saving...' : 'Save Trade'}
         </button>

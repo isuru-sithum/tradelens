@@ -238,25 +238,26 @@ export default function EditTrade() {
       <div className="p-8">
         <h1 className="text-2xl font-bold mb-6">Edit Trade</h1>
 
-        <form onSubmit={handleSubmit} className="max-w-lg space-y-4">
-          <div>
-            <label className="block text-sm mb-1">Pair</label>
-            <input
-              required
-              value={pair}
-              onChange={(e) => setPair(e.target.value)}
-              className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm mb-1">Setup / Strategy</label>
-            <input
-              placeholder="Breakout, trend continuation, range reversal..."
-              value={setup}
-              onChange={(e) => setSetup(e.target.value)}
-              className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        <form onSubmit={handleSubmit} className="w-full space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm mb-1">Pair</label>
+              <input
+                required
+                value={pair}
+                onChange={(e) => setPair(e.target.value)}
+                className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Setup / Strategy</label>
+              <input
+                placeholder="Breakout, trend continuation, range reversal..."
+                value={setup}
+                onChange={(e) => setSetup(e.target.value)}
+                className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
 
           <div>
@@ -269,9 +270,9 @@ export default function EditTrade() {
               <option value="long">Long</option>
               <option value="short">Short</option>
             </select>
-          </div>
+          </div>          
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm mb-1">Entry Price</label>
               <input
@@ -294,9 +295,6 @@ export default function EditTrade() {
                 className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm mb-1">Stop Loss</label>
               <input
@@ -318,8 +316,7 @@ export default function EditTrade() {
               />
             </div>
           </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm mb-1">Margin</label>
               <input
@@ -342,13 +339,9 @@ export default function EditTrade() {
                 onChange={(e) => setLeverage(e.target.value)}
                 className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
               />
-              <p className="text-xs text-gray-500 mt-1">Use 1 for spot trades.</p>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm mb-1">Position Size (calculated)</label>
+              <label className="block text-sm mb-1">Position Size</label>
               <input
                 readOnly
                 value={calculatedPositionSize.toFixed(4)}
@@ -366,8 +359,7 @@ export default function EditTrade() {
                 className="w-full rounded bg-gray-800 px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-          </div>
-
+          </div>          
           <div>
             <label className="block text-sm mb-1">Notes</label>
             <textarea
@@ -395,9 +387,9 @@ export default function EditTrade() {
             </div>
           )}
 
-          <div className="border-t border-gray-700 pt-4">
+          <div>
             <h2 className="text-lg font-semibold mb-3">Pre-Trade Checklist</h2>
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">         
               {[
                 { key: 'clearSetup', label: 'I have a clear setup' },
                 { key: 'stopLossSet', label: 'Stop loss is defined' },
